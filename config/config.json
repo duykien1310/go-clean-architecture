@@ -21,13 +21,13 @@
       "timeout": 5000,
       "host": "database",
       "port": "5432",
-      "dbname": "database",
+      "dbname": "postgres",
       "user":"root",
       "password":"root"
     }
   },
   "redis": {
-    "host": "localhost",
+    "host": "redis",
     "port": "6379"
   }
 }

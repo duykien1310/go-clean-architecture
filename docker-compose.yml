@@ -32,6 +32,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=root
       - POSTGRES_USER=root
+      - POSTGRES_DB=postgres
 volumes:
   db:
     driver: local
