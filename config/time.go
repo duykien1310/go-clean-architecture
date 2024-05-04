@@ -1,0 +1,9 @@
+package config
+
+const (
+	LAYOUT              = "2006-01-02T15:04:05Z"
+	DATE_LAYOUT         = "2006-01-02"
+	LAYOUT_WITHOUT_HOUR = "2006-01-02T00:00:00Z"
+	LAYOUT_LAST_HOUR    = "T23:59:59Z"
+	LAYOUT_HOUR         = "15:04:05"
+)

@@ -1,0 +1,78 @@
+{
+  "error": {
+    "one": "Error",
+    "other": "Error"
+  },
+  "success": {
+    "one": "Success",
+    "other": "Success"
+  },
+  "internalServerError": {
+    "one": "Internal server error",
+    "other": "Internal server error"
+  },
+  "badRequest": {
+    "one": "Bad request",
+    "other": "Bad request"
+  },
+  "unauthorized": {
+    "one": "Unauthorized",
+    "other": "Unauthorized"
+  },
+  "forbidden": {
+    "one": "Forbidden",
+    "other": "Forbidden"
+  },
+  "lock": {
+    "one": "Your account has been deactived. Please contact admin.",
+    "other": "Your account has been deactived. Please contact admin."
+  },
+  "invalidPassword": {
+    "one": "Invalid password",
+    "other": "Invalid password"
+  },
+  "userNotExists": {
+    "one": "User not exists",
+    "other": "User not exists"
+  },
+  "usernameNotExists": {
+    "one": "Username not exists",
+    "other": "Username not exists"
+  },
+  "usernameOrEmailExists": {
+    "one": "Username or email already exists",
+    "other": "Username or email already exists"
+  },
+  "duplicateUsername": {
+    "one": "Username already exists",
+    "other": "Username already exists"
+  },
+  "emailNotExists": {
+    "one": "Email not exists",
+    "other": "Email not exists"
+  },
+  "invalidOTPCode": {
+    "one": "Invalid OTP code",
+    "other": "Invalid OTP code"
+  },
+  "invalidRole": {
+    "one": "Invalid role",
+    "other": "Invalid role"
+  },
+  "userDuplicate": {
+    "one": "User already exists",
+    "other": "User already exists"
+  },
+  "userExists": {
+    "one": "User already exists",
+    "other": "User already exists"
+  },
+  "sameOldNewPassword": {
+    "one": "New password must be different with old password",
+    "other": "New password must be different with old password"
+  },
+  "invalidEmail": {
+    "one": "Invalid email",
+    "other": "Invalid email"
+  }
+}
