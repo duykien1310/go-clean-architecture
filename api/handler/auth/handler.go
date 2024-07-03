@@ -12,7 +12,7 @@ func MakeHandlers(app *gin.Engine, authService auth.UseCase, verifier util.Verif
 	authGroup := app.Group("/api/auth")
 	{
 		authGroup.GET("/healthCheck", func(ctx *gin.Context) {
-			ctx.JSON(200, nil)
+			ctx.JSON(200, "Server B")
 		})
 
 		authGroup.POST("/register/otp", tx.RedisTransactionMiddleware(), func(ctx *gin.Context) {
