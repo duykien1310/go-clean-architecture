@@ -2,15 +2,11 @@ package main
 
 import (
 	authHandler "auth_service/api/handler/auth"
-	"encoding/json"
 	"fmt"
-
-	"auth_service/api/middleware"
 
 	"auth_service/config"
 	"auth_service/docs"
 	"auth_service/infrastucture/repository"
-	jwtUtil "auth_service/infrastucture/repository/util"
 	"auth_service/usecase/auth"
 	"log"
 	"os"
@@ -19,9 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"golang.org/x/text/language"
-
-	ginI18n "github.com/gin-contrib/i18n"
 )
 
 func init() {
@@ -40,11 +33,11 @@ func main() {
 	}
 
 	// Redis
-	redisClient, err := repository.ConnectRedis(envConfig.Redis)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// redisClient, err := repository.ConnectRedis(envConfig.Redis)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
 
 	// App
 	app := gin.New()
@@ -64,41 +57,16 @@ func main() {
 	}
 
 	// Verifier
-	verifier := jwtUtil.NewVerifier(redisClient, redisClient.TxPipeline())
+	// verifier := jwtUtil.NewVerifier(redisClient)
 
 	// Define Repository
 	userRepo := repository.NewUserRepository(db)
-	roleRepo := repository.NewRoleRepository(db)
-	statusRepo := repository.NewStatusRepository(db)
-	emailRepo := repository.NewEmailRepository(db)
 
 	// Define Service
-	authService := auth.NewService(userRepo, statusRepo, roleRepo, verifier, emailRepo)
-
-	// I18n
-	app.Use(ginI18n.Localize(
-		ginI18n.WithBundle(&ginI18n.BundleCfg{
-			RootPath:         "./resource/lang",
-			AcceptLanguage:   []language.Tag{language.English, language.Vietnamese, language.Japanese},
-			DefaultLanguage:  language.Japanese,
-			UnmarshalFunc:    json.Unmarshal,
-			FormatBundleFile: "json",
-		}),
-		ginI18n.WithGetLngHandle(func(ctx *gin.Context, defaultLanguage string) string {
-			language := ctx.Query("language")
-			if language != "" {
-				return language
-			}
-
-			return defaultLanguage
-		}),
-	))
-
-	//transaction
-	tx := middleware.NewMiddlewareRepository(db, redisClient)
+	authService := auth.NewService(userRepo)
 
 	// Handler
-	authHandler.MakeHandlers(app, authService, verifier, tx)
+	authHandler.MakeHandlers(app, authService)
 
 	docs.SwaggerInfo.BasePath = ""
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

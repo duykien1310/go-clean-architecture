@@ -7,13 +7,10 @@ import (
 
 func convertRegisterPayloadToUserEntity(payload payload.Register) *entity.User {
 	result := entity.User{
-		Email:       payload.Email,
-		UserName:    payload.UserName,
-		FirstName:   payload.FirstName,
-		LastName:    payload.LastName,
-		Password:    payload.Password,
-		Address:     payload.Address,
-		PhoneNumber: payload.PhoneNumber,
+		UserName:  payload.UserName,
+		FirstName: payload.FirstName,
+		LastName:  payload.LastName,
+		Password:  payload.Password,
 	}
 
 	return &result

@@ -22,24 +22,13 @@ type Verifier interface {
 }
 
 type JWTVerifier struct {
-	redis     *redis.Client
-	pipeliner redis.Pipeliner
+	redis *redis.Client
 }
 
-func NewVerifier(redis *redis.Client, pipeliner redis.Pipeliner) *JWTVerifier {
+func NewVerifier(redis *redis.Client) *JWTVerifier {
 	return &JWTVerifier{
-		redis:     redis,
-		pipeliner: pipeliner,
+		redis: redis,
 	}
-}
-
-func (v *JWTVerifier) WithTrx(trxHandle redis.Pipeliner) *JWTVerifier {
-	if trxHandle == nil {
-		return v
-	}
-
-	v.pipeliner = trxHandle
-	return v
 }
 
 func (v *JWTVerifier) Verify(token string) (bool, *UserData, error) {
@@ -82,7 +71,7 @@ func (v *JWTVerifier) InvalidateToken(token string) error {
 		return err
 	}
 
-	err = v.pipeliner.Set(context.TODO(), claims.Jti, token, time.Duration(time.Unix(claims.ExpiresAt.Unix(), 0).Sub(time.Now()))).Err()
+	err = v.redis.Set(context.TODO(), claims.Jti, token, time.Duration(time.Unix(claims.ExpiresAt.Unix(), 0).Sub(time.Now()))).Err()
 	if err != nil {
 		return err
 	}
@@ -91,46 +80,46 @@ func (v *JWTVerifier) InvalidateToken(token string) error {
 }
 
 func (v *JWTVerifier) CacheUserData(user *entity.User, expiresAt int) error {
-	userData := UserData{
-		Status: user.Status.Code,
-	}
+	// userData := UserData{
+	// 	Status: user.Status.Code,
+	// }
 
-	userDataJSON, err := json.Marshal(&userData)
-	if err != nil {
-		return err
-	}
+	// userDataJSON, err := json.Marshal(&userData)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = v.pipeliner.Set(context.TODO(), fmt.Sprint(user.Id), userDataJSON, time.Duration(expiresAt)).Err()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (v *JWTVerifier) CacheRegisterOTPCode(email string, otpCode string, expiresAt int) error {
-	err := v.pipeliner.Set(context.TODO(), fmt.Sprintf("otp_%v", email), otpCode, time.Duration(expiresAt)).Err()
-	if err != nil {
-		return err
-	}
+	// err = v.redis.Set(context.TODO(), fmt.Sprint(user.Id), userDataJSON, time.Duration(expiresAt)).Err()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
-func (v *JWTVerifier) GetOTPRegisterCode(email string) (string, error) {
-	otpCode, err := v.redis.Get(context.TODO(), fmt.Sprintf("otp_%v", email)).Result()
-	if err != nil {
-		return "", err
-	}
+// func (v *JWTVerifier) CacheRegisterOTPCode(email string, otpCode string, expiresAt int) error {
+// 	err := v.redis.Set(context.TODO(), fmt.Sprintf("otp_%v", email), otpCode, time.Duration(expiresAt)).Err()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return otpCode, nil
-}
+// 	return nil
+// }
 
-func (v *JWTVerifier) InvalidateOTPRegisterCode(email string, expiresAt int) error {
-	err := v.pipeliner.Set(context.TODO(), fmt.Sprintf("otp_%v", email), "", time.Duration(time.Unix(int64(expiresAt), 0).Sub(time.Now()))).Err()
-	if err != nil {
-		return err
-	}
+// func (v *JWTVerifier) GetOTPRegisterCode(email string) (string, error) {
+// 	otpCode, err := v.redis.Get(context.TODO(), fmt.Sprintf("otp_%v", email)).Result()
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	return nil
-}
+// 	return otpCode, nil
+// }
+
+// func (v *JWTVerifier) InvalidateOTPRegisterCode(email string, expiresAt int) error {
+// 	err := v.redis.Set(context.TODO(), fmt.Sprintf("otp_%v", email), "", time.Duration(time.Unix(int64(expiresAt), 0).Sub(time.Now()))).Err()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }

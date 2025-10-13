@@ -19,9 +19,9 @@
   "database": {
     "postgres": {
       "timeout": 5000,
-      "host": "database",
+      "host": "localhost",
       "port": "5432",
-      "dbname": "postgres",
+      "dbname": "social_network",
       "user":"root",
       "password":"root"
     }

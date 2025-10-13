@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	ginI18n "github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-playground/validator/v10"
@@ -37,7 +36,7 @@ func ParseError(ctx *gin.Context, err error) string {
 		out = parseMarshallingError(*typedError)
 
 	default:
-		out = ginI18n.MustGetMessage(ctx, err.Error())
+		out = err.Error()
 	}
 
 	return out

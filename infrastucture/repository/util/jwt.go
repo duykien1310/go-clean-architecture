@@ -66,9 +66,7 @@ func GenerateAccessToken(user *entity.User) (string, error) {
 	// Generate claims
 	claims := entity.TokenClaims{
 		UserId: user.Id,
-		Email:  user.Email,
 		Jti:    random.String(),
-		Role:   user.Role.Code,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(config.GetInt("jwt.accessMaxAge")))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
