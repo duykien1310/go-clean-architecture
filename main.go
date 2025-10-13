@@ -2,12 +2,16 @@ package main
 
 import (
 	authHandler "auth_service/api/handler/auth"
+	postHandler "auth_service/api/handler/post"
+	userHandler "auth_service/api/handler/user"
 	"fmt"
 
 	"auth_service/config"
 	"auth_service/docs"
 	"auth_service/infrastucture/repository"
 	"auth_service/usecase/auth"
+	"auth_service/usecase/post"
+	"auth_service/usecase/user"
 	"log"
 	"os"
 
@@ -61,12 +65,17 @@ func main() {
 
 	// Define Repository
 	userRepo := repository.NewUserRepository(db)
+	postRepo := repository.NewPostRepository(db)
 
 	// Define Service
 	authService := auth.NewService(userRepo)
+	userService := user.NewService(userRepo)
+	postService := post.NewService(postRepo)
 
 	// Handler
 	authHandler.MakeHandlers(app, authService)
+	userHandler.MakeHandlers(app, userService)
+	postHandler.MakeHandlers(app, postService)
 
 	docs.SwaggerInfo.BasePath = ""
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

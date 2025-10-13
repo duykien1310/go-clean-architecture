@@ -37,6 +37,7 @@ func (r UserRepository) FindById(id int) (*entity.User, error) {
 	user := entity.User{}
 
 	result := r.db.Where("id = ?", id).
+		Preload("Post").
 		First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
