@@ -15,6 +15,7 @@
     "accessMaxAge": 604800000000000,
     "refreshMaxAge": 691200000000000
   },
+  "postAge": 604800,
   "service": {},
   "database": {
     "postgres": {
@@ -27,7 +28,7 @@
     }
   },
   "redis": {
-    "host": "redis",
-    "port": "6379"
+    "host": "localhost",
+    "port": "1234"
   }
 }

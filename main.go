@@ -2,6 +2,7 @@ package main
 
 import (
 	authHandler "auth_service/api/handler/auth"
+	followingHandler "auth_service/api/handler/following"
 	postHandler "auth_service/api/handler/post"
 	userHandler "auth_service/api/handler/user"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"auth_service/docs"
 	"auth_service/infrastucture/repository"
 	"auth_service/usecase/auth"
+	"auth_service/usecase/following"
 	"auth_service/usecase/post"
 	"auth_service/usecase/user"
 	"log"
@@ -37,11 +39,11 @@ func main() {
 	}
 
 	// Redis
-	// redisClient, err := repository.ConnectRedis(envConfig.Redis)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
+	redisClient, err := repository.ConnectRedis(envConfig.Redis)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	// App
 	app := gin.New()
@@ -64,18 +66,22 @@ func main() {
 	// verifier := jwtUtil.NewVerifier(redisClient)
 
 	// Define Repository
+	caching := repository.NewCaching(redisClient)
 	userRepo := repository.NewUserRepository(db)
 	postRepo := repository.NewPostRepository(db)
+	followingRepo := repository.NewFollowingRepository(db)
 
 	// Define Service
 	authService := auth.NewService(userRepo)
 	userService := user.NewService(userRepo)
-	postService := post.NewService(postRepo)
+	postService := post.NewService(postRepo, userRepo, caching)
+	followingService := following.NewService(followingRepo)
 
 	// Handler
 	authHandler.MakeHandlers(app, authService)
 	userHandler.MakeHandlers(app, userService)
 	postHandler.MakeHandlers(app, postService)
+	followingHandler.MakeHandlers(app, followingService)
 
 	docs.SwaggerInfo.BasePath = ""
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

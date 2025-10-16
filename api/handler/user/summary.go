@@ -18,11 +18,31 @@ func convertUserDetailToPresenter(data *entity.User) *userPresenter.User {
 		})
 	}
 
+	followings := []*userPresenter.UserFollow{}
+	for _, data := range data.FollowingUser {
+		followings = append(followings, &userPresenter.UserFollow{
+			Id:        data.Id,
+			FirstName: data.FirstName,
+			LastName:  data.LastName,
+		})
+	}
+
+	followers := []*userPresenter.UserFollow{}
+	for _, data := range data.FollowerUser {
+		followers = append(followers, &userPresenter.UserFollow{
+			Id:        data.Id,
+			FirstName: data.FirstName,
+			LastName:  data.LastName,
+		})
+	}
+
 	result := &userPresenter.User{
 		Id:        data.Id,
 		FirstName: data.FirstName,
 		LastName:  data.LastName,
 		Posts:     listPost,
+		Following: followings,
+		Follower:  followers,
 
 		CreatedAt: data.CreatedAt.Format(config.LAYOUT),
 		UpdatedAt: data.UpdatedAt.Format(config.LAYOUT),

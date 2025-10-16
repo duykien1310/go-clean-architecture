@@ -8,6 +8,7 @@ import (
 	"auth_service/infrastucture/repository/util"
 	"auth_service/usecase/post"
 	"fmt"
+	"strconv"
 
 	"net/http"
 
@@ -34,5 +35,28 @@ func createPost(ctx *gin.Context, postService post.UseCase) {
 		Message: config.SUCCESS,
 		Results: nil,
 	}
+	ctx.JSON(http.StatusOK, response)
+}
+
+func generateNewsfeed(ctx *gin.Context, postService post.UseCase) {
+	userId := ctx.Query("userId")
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		util.HandlerException(ctx, http.StatusBadRequest, entity.ErrBadRequest)
+		return
+	}
+
+	result, err := postService.GenerateNewsfeed(userIdInt)
+	if err != nil {
+		util.HandlerException(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	response := presenter.BasicResponse{
+		Status:  fmt.Sprint(http.StatusOK),
+		Message: config.SUCCESS,
+		Results: result,
+	}
+
 	ctx.JSON(http.StatusOK, response)
 }

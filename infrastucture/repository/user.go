@@ -38,6 +38,8 @@ func (r UserRepository) FindById(id int) (*entity.User, error) {
 
 	result := r.db.Where("id = ?", id).
 		Preload("Post").
+		Preload("FollowingUser").
+		Preload("FollowerUser").
 		First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -69,4 +71,32 @@ func (r UserRepository) Register(user *entity.User) error {
 	}
 
 	return nil
+}
+
+func (r UserRepository) GetListFolowingUserIdByUserId(userId int) ([]int, error) {
+	var userIds []int
+
+	err := r.db.Model(&entity.User{}).
+		Joins(`join following on "user"."id" = following.user_id`).
+		Where(`"user"."id" = ?`, userId).
+		Pluck(`following.follow_user_id`, &userIds).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return userIds, nil
+}
+
+func (r UserRepository) GetListFolowerIdByUserId(userId int) ([]int, error) {
+	var userIds []int
+
+	err := r.db.Model(&entity.User{}).
+		Joins(`join following on "user"."id" = following.follow_user_id`).
+		Where(`"user"."id" = ?`, userId).
+		Pluck(`following.user_id`, &userIds).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return userIds, nil
 }

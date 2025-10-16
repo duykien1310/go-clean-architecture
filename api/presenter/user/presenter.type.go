@@ -18,12 +18,14 @@ type UserResponsePagination struct {
 }
 
 type User struct {
-	Id        int     `json:"id"`
-	FirstName string  `json:"firstName"`
-	Posts     []*Post `json:"post"`
-	LastName  string  `json:"lastName"`
-	CreatedAt string  `json:"createdAt"`
-	UpdatedAt string  `json:"updatedAt"`
+	Id        int           `json:"id"`
+	FirstName string        `json:"firstName"`
+	LastName  string        `json:"lastName"`
+	Posts     []*Post       `json:"post"`
+	Following []*UserFollow `json:"following"`
+	Follower  []*UserFollow `json:"follower"`
+	CreatedAt string        `json:"createdAt"`
+	UpdatedAt string        `json:"updatedAt"`
 }
 
 type UserDetailResponse struct {
@@ -38,4 +40,10 @@ type Post struct {
 	Content   string `json:"content"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
+}
+
+type UserFollow struct {
+	Id        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 }

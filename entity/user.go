@@ -7,12 +7,14 @@ import (
 )
 
 type User struct {
-	Id        int     `gorm:"primary_key;AUTO_INCREMENT" json:"id"`
-	UserName  string  `gorm:"type:varchar(255)" json:"userName"`
-	Password  string  `gorm:"type:varchar(255)" json:"password"`
-	FirstName string  `gorm:"type:varchar(255)" json:"firstName"`
-	LastName  string  `gorm:"type:varchar(255)" json:"lastName"`
-	Post      []*Post `gorm:"foreignKey:UserId"`
+	Id            int     `gorm:"primary_key;AUTO_INCREMENT" json:"id"`
+	UserName      string  `gorm:"type:varchar(255)" json:"userName"`
+	Password      string  `gorm:"type:varchar(255)" json:"password"`
+	FirstName     string  `gorm:"type:varchar(255)" json:"firstName"`
+	LastName      string  `gorm:"type:varchar(255)" json:"lastName"`
+	Post          []*Post `gorm:"foreignKey:UserId"`
+	FollowingUser []*User `gorm:"many2many:Following;foreignKey:Id;joinForeignKey:UserId;References:Id;;joinReferences:FollowUserId"`
+	FollowerUser  []*User `gorm:"many2many:Following;foreignKey:Id;joinForeignKey:FollowUserId;References:Id;joinReferences:UserId"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

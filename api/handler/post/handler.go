@@ -12,5 +12,9 @@ func MakeHandlers(app *gin.Engine, postService post.UseCase) {
 		masterGroup.POST("/create", func(ctx *gin.Context) {
 			createPost(ctx, postService)
 		})
+
+		masterGroup.GET("/newsfeed/generate", func(ctx *gin.Context) {
+			generateNewsfeed(ctx, postService)
+		})
 	}
 }
