@@ -18,24 +18,35 @@ func NewCaching(redis *redis.Client) *Caching {
 	}
 }
 
-func (c *Caching) CacheNewsFeed(userId int, postScores map[int]time.Time, expiresAt int) error {
-	key := fmt.Sprintf("newsfeed:%d", userId)
-	ctx := context.TODO()
+func (c *Caching) CacheNewsFeed(userID int, postScores map[int]time.Time, expiresAt int) error {
+	ctx := context.Background()
+	key := fmt.Sprintf("newsfeed:%d", userID)
 
-	var zMembers []*redis.Z
-	for postId, createdAt := range postScores {
+	const batchSize = 10
+	zMembers := make([]*redis.Z, 0, len(postScores))
+
+	for postID, createdAt := range postScores {
 		zMembers = append(zMembers, &redis.Z{
 			Score:  float64(createdAt.Unix()),
-			Member: postId,
+			Member: postID,
 		})
 	}
 
-	if err := c.redis.ZAdd(ctx, key, zMembers...).Err(); err != nil {
-		return fmt.Errorf("failed to cache newsfeed zset: %w", err)
+	// Chia nhỏ theo batch
+	for i := 0; i < len(zMembers); i += batchSize {
+		end := i + batchSize
+		if end > len(zMembers) {
+			end = len(zMembers)
+		}
+
+		batch := zMembers[i:end]
+		if err := c.redis.ZAdd(ctx, key, batch...).Err(); err != nil {
+			return fmt.Errorf("failed to cache newsfeed zset (batch %d-%d): %w", i, end, err)
+		}
 	}
 
 	if err := c.redis.Expire(ctx, key, time.Duration(expiresAt)*time.Second).Err(); err != nil {
-		return fmt.Errorf("failed to set expiration: %w", err)
+		return fmt.Errorf("failed to set expiration for newsfeed key %s: %w", key, err)
 	}
 
 	return nil

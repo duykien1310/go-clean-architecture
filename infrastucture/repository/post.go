@@ -32,6 +32,7 @@ func (r PostRepository) GetPostsByUserIds(listUserId []int) (map[int]time.Time, 
 		Select("id, created_at").
 		Where("user_id IN ?", listUserId).
 		Order("created_at DESC").
+		Limit(10000).
 		Find(&posts).Error
 	if err != nil {
 		return nil, err
