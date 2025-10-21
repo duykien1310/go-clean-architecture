@@ -22,10 +22,6 @@ func (c *Caching) CacheNewsFeed(userId int, postScores map[int]time.Time, expire
 	key := fmt.Sprintf("newsfeed:%d", userId)
 	ctx := context.TODO()
 
-	if err := c.redis.Del(ctx, key).Err(); err != nil {
-		return fmt.Errorf("failed to clear old cache: %w", err)
-	}
-
 	var zMembers []*redis.Z
 	for postId, createdAt := range postScores {
 		zMembers = append(zMembers, &redis.Z{

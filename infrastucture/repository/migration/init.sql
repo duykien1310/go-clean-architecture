@@ -30,6 +30,8 @@ CREATE UNIQUE INDEX ON "following" ("user_id", "follow_user_id");
 CREATE INDEX idx_following_follow_user_id
 ON following (follow_user_id);
 
+CREATE INDEX idx_post_user_id_created_at ON post(user_id, created_at DESC);
+
 ALTER TABLE "post" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE "following" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
