@@ -9,14 +9,16 @@ import (
 )
 
 func main() {
-	var wg sync.WaitGroup
 	numUsers := 125
+	var (
+		wg        sync.WaitGroup
+		mu        sync.Mutex
+		latencies []time.Duration
+	)
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
 	}
-
-	latencies := make([]time.Duration, numUsers)
 
 	start := time.Now()
 
@@ -24,11 +26,14 @@ func main() {
 		wg.Add(1)
 		go func(userID int) {
 			defer wg.Done()
-			begin := time.Now()
 
+			begin := time.Now()
 			err := GenerateNewsfeed(client, userID)
 			elapsed := time.Since(begin)
-			latencies[userID-1] = elapsed
+
+			mu.Lock()
+			latencies = append(latencies, elapsed)
+			mu.Unlock()
 
 			if err != nil {
 				fmt.Printf("User %d: error -> %v\n", userID, err)
@@ -39,25 +44,24 @@ func main() {
 	wg.Wait()
 	total := time.Since(start)
 
-	// Tính latency trung bình + p95 + p99
+	// Sort để tính P95, P99
 	sort.Slice(latencies, func(i, j int) bool {
 		return latencies[i] < latencies[j]
 	})
 
-	var totalLatency time.Duration
-	for _, l := range latencies {
-		totalLatency += l
-	}
-	avg := totalLatency / time.Duration(numUsers)
+	avg := average(latencies)
+	p95 := percentile(latencies, 95)
+	p99 := percentile(latencies, 99)
+	throughput := float64(numUsers) / total.Seconds()
 
-	p95 := latencies[int(float64(numUsers)*0.95)-1]
-	p99 := latencies[int(float64(numUsers)*0.99)-1]
-
-	fmt.Println("===== Benchmark Result =====")
-	fmt.Printf("Tổng thời gian xử lý %d requests: %v\n", numUsers, total)
+	fmt.Println("\n===== Benchmark Result =====")
+	fmt.Printf("Requests: %d\n", numUsers)
+	fmt.Printf("Total time: %v\n", total)
+	fmt.Printf("Throughput: %.2f req/s\n", throughput)
 	fmt.Printf("Average latency: %v\n", avg)
 	fmt.Printf("P95 latency: %v\n", p95)
 	fmt.Printf("P99 latency: %v\n", p99)
+	fmt.Println("============================\n")
 }
 
 func GenerateNewsfeed(client *http.Client, userID int) error {
@@ -75,5 +79,28 @@ func GenerateNewsfeed(client *http.Client, userID int) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
 	return nil
+}
+
+func average(latencies []time.Duration) time.Duration {
+	var total time.Duration
+	for _, l := range latencies {
+		total += l
+	}
+	return total / time.Duration(len(latencies))
+}
+
+func percentile(latencies []time.Duration, p float64) time.Duration {
+	if len(latencies) == 0 {
+		return 0
+	}
+	index := int((p / 100.0) * float64(len(latencies)))
+	if index >= len(latencies) {
+		index = len(latencies) - 1
+	}
+	return latencies[index]
 }

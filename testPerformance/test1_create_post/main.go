@@ -1,8 +1,3 @@
-// Test 1: Fan-out (Create Post)
-// 1000 users đồng thời đăng bài
-// Mỗi users có 500 followers
-// đo tổng thời gian xử lý từ khi gọi CreatePost() đến khi CachePost() cho toàn bộ followers xong.
-
 package main
 
 import (
@@ -10,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 )
@@ -21,8 +17,12 @@ type PostRequest struct {
 }
 
 func main() {
-	var wg sync.WaitGroup
-	numUsers := 1000
+	var (
+		wg        sync.WaitGroup
+		mu        sync.Mutex
+		latencies []time.Duration
+	)
+	numUsers := 125
 
 	start := time.Now()
 	client := &http.Client{
@@ -33,7 +33,14 @@ func main() {
 		wg.Add(1)
 		go func(userID int) {
 			defer wg.Done()
+			startReq := time.Now()
 			err := CreatePost(client, userID)
+			duration := time.Since(startReq)
+
+			mu.Lock()
+			latencies = append(latencies, duration)
+			mu.Unlock()
+
 			if err != nil {
 				fmt.Printf("User %d: error -> %v\n", userID, err)
 			}
@@ -42,7 +49,24 @@ func main() {
 
 	wg.Wait()
 	total := time.Since(start)
-	fmt.Printf("===> Tổng thời gian xử lý %d CreatePost: %v\n", numUsers, total)
+
+	// Sort latencies để tính percentile
+	sort.Slice(latencies, func(i, j int) bool {
+		return latencies[i] < latencies[j]
+	})
+
+	// Tính toán các chỉ số
+	avgLatency := average(latencies)
+	p95 := percentile(latencies, 95)
+	p99 := percentile(latencies, 99)
+
+	fmt.Printf("\n===== Benchmark Report =====\n")
+	fmt.Printf("Total users (concurrent): %d\n", numUsers)
+	fmt.Printf("Total elapsed time: %v\n", total)
+	fmt.Printf("Average latency: %v\n", avgLatency)
+	fmt.Printf("P95 latency: %v\n", p95)
+	fmt.Printf("P99 latency: %v\n", p99)
+	fmt.Println("============================\n")
 }
 
 func CreatePost(client *http.Client, userID int) error {
@@ -68,4 +92,23 @@ func CreatePost(client *http.Client, userID int) error {
 	defer resp.Body.Close()
 
 	return nil
+}
+
+func average(durations []time.Duration) time.Duration {
+	var total time.Duration
+	for _, d := range durations {
+		total += d
+	}
+	return total / time.Duration(len(durations))
+}
+
+func percentile(durations []time.Duration, p float64) time.Duration {
+	if len(durations) == 0 {
+		return 0
+	}
+	index := int((p / 100.0) * float64(len(durations)))
+	if index >= len(durations) {
+		index = len(durations) - 1
+	}
+	return durations[index]
 }

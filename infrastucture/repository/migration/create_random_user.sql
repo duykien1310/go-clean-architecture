@@ -4,4 +4,4 @@ SELECT
   md5(random()::text) AS password,
   initcap(md5(random()::text)::text) AS first_name,
   initcap(md5(random()::text)::text) AS last_name
-FROM generate_series(1, 1000000) AS gs;
+FROM generate_series(1, 100000) AS gs;

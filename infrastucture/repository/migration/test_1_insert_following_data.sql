@@ -1,15 +1,6 @@
-INSERT INTO following (user_id, follow_user_id)
-SELECT
-  gs AS user_id,
-  1  AS follow_user_id
-FROM generate_series(100, 999999) AS gs;
-
-
-
-
 -- Test 1: Fan-out (Create Post)
 -- 1000 users đồng thời đăng bài
--- Mỗi users có 500 followers
+-- Mỗi users có 1000 followers
 -- đo tổng thời gian xử lý từ khi gọi CreatePost() đến khi CachePost() cho toàn bộ followers xong.
 DO $$
 DECLARE
@@ -20,9 +11,9 @@ BEGIN
         SELECT u_id, f_id
         FROM (
             SELECT DISTINCT (1 + floor(random() * 10000))::INT AS u_id
-            FROM generate_series(1, 100000)
+            FROM generate_series(1, 5000)
         ) AS followers
         WHERE f_id <> u_id
-        LIMIT 500;
+        LIMIT 1000;
     END LOOP;
 END $$;
